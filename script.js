@@ -9,7 +9,7 @@ const CONFIG = {
   letter: "AKU MAU MINTA MAAF ATAS KESALAHAN YANG KU LAKUKAN KE PADA MU KEMARINN, Semoga kamu selalu di berikan kesehatan, kebahagian, dan slalu di mudahkan untuk mencapai impianmu dan cita cita kamu.",
   finalMessage: "Aku mau minta maaf atas kesalahan yang ku lakukan kepada mu, dan aku mau bilang semoga setelah ini kamu slalu bahagia teruss dan slalu di berikan kesehatan dan slalu di mudahkan untuk mencapai impian mu dan cita cita kamu,",
   
-  musicUrl: "asset/lagu cantik .mpeg", // Replace this path to use another song.
+  musicUrl: "asset/lagu-cantik-.mp3", // Replace this path to use another song.
   gallery: [
     { src: "https://cdn.phototourl.com/anon/2026-11-20-fb9a4db0-f1c7-4246-868a-de540e49a7a2.webp", caption: "a beautiful photo of you" },
     { src: "https://cdn.phototourl.com/anon/2026-11-20-2ba62b4a-8156-4aa2-b236-300927b943d3.webp", caption: "a beautiful photo of you" },
@@ -111,6 +111,8 @@ function revealObserver() {
 function openSurprise() {
   if (hasOpened) return;
   hasOpened = true;
+  // This click is a user interaction, so browsers allow the selected song to start here.
+  startMusic();
   intro.classList.add("leaving");
   setTimeout(() => {
     intro.style.display = "none";
@@ -165,23 +167,31 @@ function playGeneratedMelody() {
   }, 720);
 }
 
-async function toggleMusic() {
+async function startMusic() {
   const button = $("#musicToggle");
   const label = button.querySelector(".music-label");
-  const active = button.classList.contains("playing");
-  if (active) {
-    audio?.pause();
-    if (melodyTimer) clearInterval(melodyTimer);
-    melodyTimer = null;
-    button.classList.remove("playing"); button.setAttribute("aria-pressed", "false"); label.textContent = "Lagu Fav";
-    return;
-  }
+  if (button.classList.contains("playing")) return;
   if (CONFIG.musicUrl) {
     audio ??= new Audio(CONFIG.musicUrl);
     audio.loop = true;
     try { await audio.play(); } catch { label.textContent = "Music unavailable"; return; }
   } else { playGeneratedMelody(); }
-  button.classList.add("playing"); button.setAttribute("aria-pressed", "true"); label.textContent = "Pause melody";
+  button.classList.add("playing"); button.setAttribute("aria-pressed", "true"); label.textContent = "Lagu Fav · Pause";
+}
+
+async function toggleMusic() {
+  const button = $("#musicToggle");
+  const label = button.querySelector(".music-label");
+  if (!button.classList.contains("playing")) {
+    await startMusic();
+    return;
+  }
+  audio?.pause();
+  if (melodyTimer) clearInterval(melodyTimer);
+  melodyTimer = null;
+  button.classList.remove("playing");
+  button.setAttribute("aria-pressed", "false");
+  label.textContent = "Lagu Fav";
 }
 
 function replay() {
